@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="JobData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/job_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/abilities/attack.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+job_name = "Black Mage"
+description = "A fragile mage wielding devastating offensive spells."
+hp_multiplier = 0.8
+mp_multiplier = 1.6
+speed_multiplier = 1.1
+physical_attack_multiplier = 0.7
+physical_defense_multiplier = 0.7
+magical_attack_multiplier = 1.5
+magical_defense_multiplier = 1.1
+base_move = 3
+base_jump = 2
+innate_abilities = [ExtResource("2")]
+learnable_abilities = []
+prerequisites = {}

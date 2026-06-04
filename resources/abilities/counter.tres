@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ability_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_name = "Counter"
+description = "50% chance to counter-attack after being hit by a physical attack."
+ability_type = 1
+target_type = 0
+effect_type = 10
+range = 1
+area = 0
+power = 80
+mp_cost = 0
+jp_cost = 200
+trigger_chance = 0.5
+stat_bonus = 0
+stat_multiplier = 1.0

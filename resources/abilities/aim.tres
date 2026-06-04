@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ability_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_name = "Aim"
+description = "A carefully aimed ranged shot."
+ability_type = 0
+target_type = 0
+effect_type = 0
+range = 4
+area = 0
+power = 90
+mp_cost = 0
+jp_cost = 100
+trigger_chance = 0.0
+stat_bonus = 0
+stat_multiplier = 1.0
