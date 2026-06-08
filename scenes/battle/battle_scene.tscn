@@ -1,6 +1,31 @@
 [gd_scene format=3 uid="uid://bw2mk6ai3sg5j"]
 
 [ext_resource type="Script" uid="uid://cn66g8njt47bk" path="res://scripts/battle/battle_manager.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://b17gtpowqqbl6" path="res://scenes/map/battle_map.tscn" id="2"]
 
-[node name="BattleScene" type="Node3D" unique_id=1986201300]
+[sub_resource type="Environment" id="env_1"]
+background_mode = 1
+background_color = Color(0.12, 0.12, 0.18, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.35, 0.35, 0.45, 1)
+ambient_light_energy = 0.6
+
+[node name="BattleScene" type="Node3D" unique_id=1453697735]
 script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=8474799]
+environment = SubResource("env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=789189208]
+transform = Transform3D(0.8660254, 0.40957603, -0.28678823, 0, 0.57357645, 0.81915206, 0.5, -0.7094065, 0.49673176, 0, 0, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="CameraPivot" type="Node3D" parent="." unique_id=2045809658]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 4.5)
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=1447100146]
+transform = Transform3D(1, 0, 0, 0, 0.6156615, 0.7880107, 0, -0.7880107, 0.6156615, 0, 14, 10)
+fov = 40.0
+
+[node name="BattleMap" parent="." unique_id=2059213139 instance=ExtResource("2")]

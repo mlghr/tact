@@ -1,10 +1,7 @@
-[gd_resource type="Resource" script_class="BattleMapData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BattleMapData" format=3 uid="uid://dy8xow10b4m4g"]
 
-[ext_resource type="Script" path="res://scripts/map/battle_map_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://dmturk1h80tiv" path="res://scripts/map/battle_map_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
-width = 10
-depth = 10
 heights = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-blocked_tiles = []

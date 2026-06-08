@@ -52,22 +52,22 @@ func _make_slot() -> Dictionary:
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(vbox)
 
-	var job_lbl := Label.new()
-	job_lbl.text = ""
-	job_lbl.add_theme_font_size_override("font_size", 14)
-	job_lbl.add_theme_color_override("font_color", C_TEXT_DIM)
-	job_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	job_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(job_lbl)
+	var job_label := Label.new()
+	job_label.text = ""
+	job_label.add_theme_font_size_override("font_size", 14)
+	job_label.add_theme_color_override("font_color", C_TEXT_DIM)
+	job_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	job_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(job_label)
 
-	var name_lbl := Label.new()
-	name_lbl.text = ""
-	name_lbl.add_theme_font_size_override("font_size", 17)
-	name_lbl.add_theme_color_override("font_color", C_TEXT)
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.clip_text = true
-	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(name_lbl)
+	var name_label := Label.new()
+	name_label.text = ""
+	name_label.add_theme_font_size_override("font_size", 17)
+	name_label.add_theme_color_override("font_color", C_TEXT)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.clip_text = true
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(name_label)
 
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -95,39 +95,39 @@ func _make_slot() -> Dictionary:
 
 	vbox.add_child(hp_bar)
 
-	return { "panel": panel, "name_lbl": name_lbl, "job_lbl": job_lbl, "hp_bar": hp_bar }
+	return { "panel": panel, "name_label": name_label, "job_label": job_label, "hp_bar": hp_bar }
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
 func refresh(ordered_units: Array) -> void:
 	for idx in range(_slots.size()):
-		var slot:     Dictionary    = _slots[idx]
-		var panel:    PanelContainer = slot["panel"]
-		var name_lbl: Label          = slot["name_lbl"]
-		var job_lbl:  Label          = slot["job_lbl"]
-		var hp_bar:   ProgressBar    = slot["hp_bar"]
+		var slot:       Dictionary    = _slots[idx]
+		var panel:      PanelContainer = slot["panel"]
+		var name_label: Label          = slot["name_label"]
+		var job_label:  Label          = slot["job_label"]
+		var hp_bar:     ProgressBar    = slot["hp_bar"]
 
 		if idx < ordered_units.size():
 			var unit: Unit  = ordered_units[idx]
 			var is_active   := idx == 0
-			var bg_color    := C_PLAYER_BG if unit.faction == GameConstants.FACTION.PLAYER else C_ENEMY_BG
+			var bg_color    := C_PLAYER_BG if unit.faction == GameConstants.FACTION_PLAYER else C_ENEMY_BG
 			var border_col  := C_BORDER_ACT if is_active else C_BORDER_IDLE
-			var acc_color   := C_PLAYER_ACC if unit.faction == GameConstants.FACTION.PLAYER else C_ENEMY_ACC
+			var acc_color   := C_PLAYER_ACC if unit.faction == GameConstants.FACTION_PLAYER else C_ENEMY_ACC
 
 			_apply_slot_style(panel, bg_color, border_col, is_active)
 			panel.custom_minimum_size = Vector2(SLOT_W_ACTIVE if is_active else SLOT_W_IDLE, SLOT_H)
-			name_lbl.text = unit.unit_name.left(7)
-			name_lbl.add_theme_color_override("font_color", C_TEXT if is_active else acc_color)
-			job_lbl.text  = _job_abbrev(unit)
-			hp_bar.value  = float(unit.current_hp) / float(unit.max_hp)
-			hp_bar.visible = true
+			name_label.text = unit.unit_name.left(7)
+			name_label.add_theme_color_override("font_color", C_TEXT if is_active else acc_color)
+			job_label.text  = _job_abbreviation(unit)
+			hp_bar.value    = float(unit.current_hp) / float(unit.max_hp)
+			hp_bar.visible  = true
 			panel.modulate.a = 1.0
 		else:
 			_apply_slot_style(panel, C_EMPTY_BG, C_BORDER_IDLE, false)
 			panel.custom_minimum_size = Vector2(SLOT_W_IDLE, SLOT_H)
-			name_lbl.text  = ""
-			job_lbl.text   = ""
-			hp_bar.visible = false
+			name_label.text  = ""
+			job_label.text   = ""
+			hp_bar.visible   = false
 			panel.modulate.a = 0.30
 
 # ── Private ───────────────────────────────────────────────────────────────────
@@ -140,12 +140,12 @@ func _apply_slot_style(panel: PanelContainer, bg: Color, border: Color, is_activ
 	style.set_corner_radius_all(6)
 	panel.add_theme_stylebox_override("panel", style)
 
-func _job_abbrev(unit: Unit) -> String:
+func _job_abbreviation(unit: Unit) -> String:
 	if unit.current_job == null:
 		return ""
 	var words := unit.current_job.job_name.split(" ")
-	var abbrev := ""
+	var abbreviation := ""
 	for word in words:
 		if word.length() > 0:
-			abbrev += word[0].to_upper()
-	return abbrev.left(3)
+			abbreviation += word[0].to_upper()
+	return abbreviation.left(3)

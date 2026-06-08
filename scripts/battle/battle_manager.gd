@@ -21,16 +21,17 @@ enum BattlePhase {
 
 var _phase: BattlePhase = BattlePhase.NONE
 
-# ── Child Systems ─────────────────────────────────────────────────────────────
+# ── Scene-tree references (defined in battle_scene.tscn) ─────────────────────
 
-var _battle_map: BattleMap
+## The instanced BattleMap scene child.
+@onready var _battle_map: BattleMap = $BattleMap
+## Root of the camera rig — rotate this to orbit the map.
+@onready var _camera_pivot: Node3D = $CameraPivot
+## The actual camera, parented to CameraPivot.
+@onready var _camera: Camera3D = $CameraPivot/Camera3D
+
 var _turn_manager: TurnManager
 var _units_root: Node3D
-
-# ── Camera ────────────────────────────────────────────────────────────────────
-
-var _camera_pivot: Node3D
-var _camera: Camera3D
 ## Current rotation target in degrees; the pivot tweens toward this.
 var _target_camera_rotation: float = -45.0
 ## Current zoom multiplier; 1.0 = default, lower = closer.
@@ -98,9 +99,9 @@ var _hovered_tile: Tile = null
 # ─────────────────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	_build_environment()
-	_build_camera()
-	_build_map()
+	# Environment, camera, and map are already in the scene tree via battle_scene.tscn.
+	# Just apply initial camera state and centre on the loaded map.
+	_init_camera()
 	_centre_camera_on_map()
 	# TurnManager must exist before _build_units() so _spawn_unit_from_dict()
 	# can register each unit immediately after spawning it.
@@ -218,45 +219,11 @@ func _unhandled_input(event: InputEvent) -> void:
 # Scene Construction
 # ─────────────────────────────────────────────────────────────────────────────
 
-func _build_environment() -> void:
-	var world_env := WorldEnvironment.new()
-	world_env.name = "WorldEnvironment"
-	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.12, 0.12, 0.18)
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.35, 0.35, 0.45)
-	env.ambient_light_energy = 0.6
-	world_env.environment = env
-	add_child(world_env)
-
-	var sun := DirectionalLight3D.new()
-	sun.name = "Sun"
-	sun.rotation_degrees = Vector3(-55.0, -30.0, 0.0)
-	sun.light_energy = 1.2
-	sun.shadow_enabled = true
-	add_child(sun)
-
-func _build_camera() -> void:
-	_camera_pivot = Node3D.new()
-	_camera_pivot.name = "CameraPivot"
-	add_child(_camera_pivot)
-	# Centre on the map — will be refined after _build_map() if needed.
-	# Default assumes a 10×10 map; _centre_camera_on_map() corrects this.
-	_camera_pivot.position = Vector3(4.5, 0.0, 4.5)
-
-	_camera = Camera3D.new()
-	_camera.name = "Camera"
-	_camera_pivot.add_child(_camera)
-	_camera.fov = 40.0
+## Applies the starting camera rotation and position from the scene values.
+## Called once in _ready() after @onready refs are resolved.
+func _init_camera() -> void:
+	_camera_pivot.rotation_degrees.y = _target_camera_rotation
 	_apply_camera_transform()
-
-func _build_map() -> void:
-	var map_scene := load("res://scenes/map/battle_map.tscn") as PackedScene
-	_battle_map = map_scene.instantiate() as BattleMap
-	_battle_map.name = "BattleMap"
-	add_child(_battle_map)
-	# Tiles are generated inside BattleMap._ready() from its map_data resource.
 
 func _build_units() -> void:
 	_units_root = Node3D.new()

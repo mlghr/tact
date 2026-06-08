@@ -99,13 +99,13 @@ func _make_bar_row(prefix: String, fill_color: Color, show_value: bool = true) -
 	row.add_theme_constant_override("separation", 8)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var lbl := Label.new()
-	lbl.text = prefix
-	lbl.custom_minimum_size = Vector2(32, 0)
-	lbl.add_theme_font_size_override("font_size", 17)
-	lbl.add_theme_color_override("font_color", fill_color)
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(lbl)
+	var prefix_label := Label.new()
+	prefix_label.text = prefix
+	prefix_label.custom_minimum_size = Vector2(32, 0)
+	prefix_label.add_theme_font_size_override("font_size", 17)
+	prefix_label.add_theme_color_override("font_color", fill_color)
+	prefix_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(prefix_label)
 
 	var bar := ProgressBar.new()
 	bar.min_value = 0.0
@@ -127,17 +127,17 @@ func _make_bar_row(prefix: String, fill_color: Color, show_value: bool = true) -
 	bar.add_theme_stylebox_override("fill", fill)
 	row.add_child(bar)
 
-	var val_lbl := Label.new()
-	val_lbl.text = ""
-	val_lbl.custom_minimum_size = Vector2(90, 0)
-	val_lbl.add_theme_font_size_override("font_size", 17)
-	val_lbl.add_theme_color_override("font_color", C_TEXT_DIM)
-	val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	val_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	val_lbl.visible = show_value
-	row.add_child(val_lbl)
+	var value_label := Label.new()
+	value_label.text = ""
+	value_label.custom_minimum_size = Vector2(90, 0)
+	value_label.add_theme_font_size_override("font_size", 17)
+	value_label.add_theme_color_override("font_color", C_TEXT_DIM)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	value_label.visible = show_value
+	row.add_child(value_label)
 
-	return [bar, val_lbl, row]
+	return [bar, value_label, row]
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -145,7 +145,7 @@ func display_unit(unit: Unit) -> void:
 	show()
 	_name_label.text = unit.unit_name
 	_job_label.text  = unit.current_job.job_name if unit.current_job else ""
-	_faction_stripe.color = C_PLAYER if unit.faction == GameConstants.FACTION.PLAYER else C_ENEMY
+	_faction_stripe.color = C_PLAYER if unit.faction == GameConstants.FACTION_PLAYER else C_ENEMY
 	_refresh_bars(unit)
 	if not unit.hp_changed.is_connected(_on_hp_changed):
 		unit.hp_changed.connect(_on_hp_changed)

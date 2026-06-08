@@ -18,11 +18,11 @@ const C_ACCENT_ATTACK: Color = Color(0.95, 0.42, 0.15)
 const C_ACCENT_SKILL:  Color = Color(0.68, 0.28, 0.95)
 const C_ACCENT_WAIT:   Color = Color(0.40, 0.42, 0.50)
 
-var _vbox:            VBoxContainer
-var _move_button:     Button
-var _attack_button:   Button
-var _ability_buttons: Array[Button] = []
-var _wait_button:     Button
+var _button_container: VBoxContainer
+var _move_button:      Button
+var _attack_button:    Button
+var _ability_buttons:  Array[Button] = []
+var _wait_button:      Button
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(340, 0)
@@ -40,9 +40,9 @@ func _apply_panel_style() -> void:
 	add_theme_stylebox_override("panel", style)
 
 func _build_layout() -> void:
-	_vbox = VBoxContainer.new()
-	_vbox.add_theme_constant_override("separation", 5)
-	add_child(_vbox)
+	_button_container = VBoxContainer.new()
+	_button_container.add_theme_constant_override("separation", 5)
+	add_child(_button_container)
 
 	var header := Label.new()
 	header.text = "ACTIONS"
@@ -50,33 +50,33 @@ func _build_layout() -> void:
 	header.add_theme_color_override("font_color", C_HEADER)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_vbox.add_child(header)
+	_button_container.add_child(header)
 
-	_vbox.add_child(_make_separator())
+	_button_container.add_child(_make_separator())
 
 	_move_button   = _make_action_button("Move",   C_ACCENT_MOVE,   _on_move_pressed)
 	_attack_button = _make_action_button("Attack", C_ACCENT_ATTACK, _on_attack_pressed)
 
-	_vbox.add_child(_make_separator())
+	_button_container.add_child(_make_separator())
 	_wait_button = _make_action_button("Wait", C_ACCENT_WAIT, _on_wait_pressed)
 
-func _make_action_button(label: String, accent: Color, callback: Callable) -> Button:
-	var btn := Button.new()
-	btn.text = label
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.add_theme_font_size_override("font_size", 22)
-	btn.add_theme_color_override("font_color", C_TEXT)
-	btn.add_theme_color_override("font_disabled_color", C_TEXT_DIM)
-	btn.add_theme_stylebox_override("normal",   _btn_style(accent, Color(0.09, 0.10, 0.16)))
-	btn.add_theme_stylebox_override("hover",    _btn_style(accent, Color(0.14, 0.17, 0.26)))
-	btn.add_theme_stylebox_override("pressed",  _btn_style(accent, Color(0.18, 0.22, 0.34)))
-	btn.add_theme_stylebox_override("disabled", _btn_style(Color(0.22, 0.24, 0.30), Color(0.07, 0.08, 0.11)))
-	btn.add_theme_stylebox_override("focus",    _btn_style(accent, Color(0.14, 0.17, 0.26)))
-	btn.pressed.connect(callback)
-	_vbox.add_child(btn)
-	return btn
+func _make_action_button(label_text: String, accent: Color, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = label_text
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_color_override("font_color", C_TEXT)
+	button.add_theme_color_override("font_disabled_color", C_TEXT_DIM)
+	button.add_theme_stylebox_override("normal",   _make_button_style(accent, Color(0.09, 0.10, 0.16)))
+	button.add_theme_stylebox_override("hover",    _make_button_style(accent, Color(0.14, 0.17, 0.26)))
+	button.add_theme_stylebox_override("pressed",  _make_button_style(accent, Color(0.18, 0.22, 0.34)))
+	button.add_theme_stylebox_override("disabled", _make_button_style(Color(0.22, 0.24, 0.30), Color(0.07, 0.08, 0.11)))
+	button.add_theme_stylebox_override("focus",    _make_button_style(accent, Color(0.14, 0.17, 0.26)))
+	button.pressed.connect(callback)
+	_button_container.add_child(button)
+	return button
 
-func _btn_style(accent: Color, bg: Color) -> StyleBoxFlat:
+func _make_button_style(accent: Color, bg: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = bg
 	style.border_color = accent
@@ -89,13 +89,13 @@ func _btn_style(accent: Color, bg: Color) -> StyleBoxFlat:
 	return style
 
 func _make_separator() -> HSeparator:
-	var sep := HSeparator.new()
-	var sep_style := StyleBoxFlat.new()
-	sep_style.bg_color = C_SEPARATOR
-	sep.add_theme_stylebox_override("separator", sep_style)
-	sep.add_theme_constant_override("separation", 1)
-	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return sep
+	var separator := HSeparator.new()
+	var separator_style := StyleBoxFlat.new()
+	separator_style.bg_color = C_SEPARATOR
+	separator.add_theme_stylebox_override("separator", separator_style)
+	separator.add_theme_constant_override("separation", 1)
+	separator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return separator
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -110,15 +110,17 @@ func show_for_unit(unit: Unit) -> void:
 	_attack_button.visible  = has_innate or unit.equipped_action == null
 
 	if unit.can_act() and unit.equipped_action != null:
-		var ability_btn := _make_action_button(
+		var ability_button := _make_action_button(
 			unit.equipped_action.ability_name,
 			C_ACCENT_SKILL,
 			func(): _on_ability_pressed(unit.equipped_action)
 		)
-		_ability_buttons.append(ability_btn)
-		_vbox.move_child(_vbox.get_child(_vbox.get_child_count() - 2),
-			_vbox.get_child_count() - 1)
-		_vbox.move_child(_wait_button, _vbox.get_child_count() - 1)
+		_ability_buttons.append(ability_button)
+		_button_container.move_child(
+			_button_container.get_child(_button_container.get_child_count() - 2),
+			_button_container.get_child_count() - 1
+		)
+		_button_container.move_child(_wait_button, _button_container.get_child_count() - 1)
 
 	show()
 
@@ -126,9 +128,9 @@ func hide_menu() -> void:
 	hide()
 
 func _clear_ability_buttons() -> void:
-	for btn in _ability_buttons:
-		_vbox.remove_child(btn)
-		btn.queue_free()
+	for button in _ability_buttons:
+		_button_container.remove_child(button)
+		button.queue_free()
 	_ability_buttons.clear()
 
 func _on_move_pressed() -> void:
