@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b17gtpowqqbl6"]
+
+[ext_resource type="Script" uid="uid://bfqj8avqv6wqh" path="res://scripts/map/battle_map.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/maps/test_map.tres" id="2"]
+
+[node name="BattleMap" type="Node3D" unique_id=1761148114]
+script = ExtResource("1")
+map_data = ExtResource("2")

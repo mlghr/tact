@@ -38,9 +38,9 @@ static func take_turn(unit: Unit, battle_map: BattleMap) -> void:
 # ── Private ───────────────────────────────────────────────────────────────────
 
 static func _find_nearest_enemy(unit: Unit, battle_map: BattleMap) -> Unit:
-	var enemy_faction: int = GameConstants.FACTION_PLAYER \
-		if unit.faction == GameConstants.FACTION_ENEMY \
-		else GameConstants.FACTION_ENEMY
+	var enemy_faction: int = GameConstants.FACTION.PLAYER \
+		if unit.faction == GameConstants.FACTION.ENEMY \
+		else GameConstants.FACTION.ENEMY
 
 	var enemies := battle_map.get_units_by_faction(enemy_faction)
 	if enemies.is_empty():

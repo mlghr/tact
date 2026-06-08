@@ -1,0 +1,75 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1"]
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.09, 1.0)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ContentBox" type="VBoxContainer" parent="Center"]
+custom_minimum_size = Vector2(500, 0)
+theme_override_constants/separation = 0
+
+[node name="TitleLabel" type="Label" parent="Center/ContentBox"]
+layout_mode = 2
+text = "TACT"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 120
+theme_override_colors/font_color = Color(0.92, 0.93, 0.97, 1.0)
+
+[node name="SubtitleLabel" type="Label" parent="Center/ContentBox"]
+layout_mode = 2
+text = "Tactical Role-Playing Game"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.50, 0.56, 0.72, 1.0)
+
+[node name="ButtonSpacer" type="Control" parent="Center/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 64)
+
+[node name="NewGameButton" type="Button" parent="Center/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 58)
+text = "New Game"
+
+[node name="ButtonGap" type="Control" parent="Center/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="QuitButton" type="Button" parent="Center/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 58)
+text = "Quit"
+
+[node name="FadeOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0, 0.0, 0.0, 0.0)

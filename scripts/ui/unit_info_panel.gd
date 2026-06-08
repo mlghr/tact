@@ -1,95 +1,152 @@
-## HUD panel showing the active (or hovered) unit's stats.
-## Displayed in the bottom-left corner of the screen.
+## Bottom-left HUD panel — shows the active unit's name, job, HP, MP, and CT.
 class_name UnitInfoPanel
 extends PanelContainer
 
-var _name_label: Label
-var _job_label: Label
-var _hp_bar: ProgressBar
-var _hp_label: Label
-var _mp_bar: ProgressBar
-var _mp_label: Label
-var _ct_bar: ProgressBar
+const C_PANEL_BG:  Color = Color(0.07, 0.08, 0.13, 0.92)
+const C_BORDER:    Color = Color(0.22, 0.27, 0.44)
+const C_TEXT:      Color = Color(0.92, 0.93, 0.97)
+const C_TEXT_DIM:  Color = Color(0.55, 0.60, 0.74)
+const C_TRACK:     Color = Color(0.10, 0.11, 0.17)
+const C_HP:        Color = Color(0.18, 0.80, 0.40)
+const C_MP:        Color = Color(0.28, 0.55, 0.98)
+const C_CT:        Color = Color(0.90, 0.72, 0.16)
+const C_PLAYER:    Color = Color(0.30, 0.55, 1.00)
+const C_ENEMY:     Color = Color(0.90, 0.25, 0.25)
+
+var _faction_stripe: ColorRect
+var _name_label:     Label
+var _job_label:      Label
+var _hp_bar:         ProgressBar
+var _hp_label:       Label
+var _mp_bar:         ProgressBar
+var _mp_label:       Label
+var _ct_bar:         ProgressBar
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(220, 110)
+	custom_minimum_size = Vector2(480, 0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_apply_panel_style()
 	_build_layout()
 	hide()
 
+func _apply_panel_style() -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = C_PANEL_BG
+	style.border_color = C_BORDER
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.content_margin_left   = 0.0
+	style.content_margin_right  = 18.0
+	style.content_margin_top    = 14.0
+	style.content_margin_bottom = 16.0
+	add_theme_stylebox_override("panel", style)
+
 func _build_layout() -> void:
+	var outer := HBoxContainer.new()
+	outer.add_theme_constant_override("separation", 0)
+	add_child(outer)
+
+	_faction_stripe = ColorRect.new()
+	_faction_stripe.custom_minimum_size = Vector2(6, 0)
+	_faction_stripe.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_faction_stripe.color = C_PLAYER
+	outer.add_child(_faction_stripe)
+
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(14, 0)
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	outer.add_child(gap)
+
 	var vbox := VBoxContainer.new()
-	add_child(vbox)
-	vbox.add_theme_constant_override("separation", 2)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 8)
+	outer.add_child(vbox)
 
 	# Name + Job row
 	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 8)
 	vbox.add_child(name_row)
 
 	_name_label = Label.new()
 	_name_label.text = "—"
-	_name_label.add_theme_font_size_override("font_size", 14)
+	_name_label.add_theme_font_size_override("font_size", 26)
+	_name_label.add_theme_color_override("font_color", C_TEXT)
+	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_row.add_child(_name_label)
 
 	_job_label = Label.new()
 	_job_label.text = ""
-	_job_label.add_theme_font_size_override("font_size", 11)
-	_job_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.75))
-	_job_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_job_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_job_label.add_theme_font_size_override("font_size", 17)
+	_job_label.add_theme_color_override("font_color", C_TEXT_DIM)
+	_job_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	name_row.add_child(_job_label)
 
-	# HP row
-	vbox.add_child(_make_bar_row("HP", Color(0.2, 0.8, 0.3), 1.0,
-		func(bar, lbl): _hp_bar = bar; _hp_label = lbl))
-	# MP row
-	vbox.add_child(_make_bar_row("MP", Color(0.3, 0.5, 1.0), 1.0,
-		func(bar, lbl): _mp_bar = bar; _mp_label = lbl))
-	# CT row
-	vbox.add_child(_make_bar_row("CT", Color(0.9, 0.7, 0.1), 1.0,
-		func(bar, lbl): _ct_bar = bar; lbl.visible = false))
+	# Bars
+	var hp_row := _make_bar_row("HP", C_HP)
+	_hp_bar = hp_row[0]; _hp_label = hp_row[1]
+	vbox.add_child(hp_row[2])
 
-func _make_bar_row(label_text: String, bar_color: Color, initial_ratio: float,
-		assign_fn: Callable) -> HBoxContainer:
+	var mp_row := _make_bar_row("MP", C_MP)
+	_mp_bar = mp_row[0]; _mp_label = mp_row[1]
+	vbox.add_child(mp_row[2])
+
+	var ct_row := _make_bar_row("CT", C_CT, false)
+	_ct_bar = ct_row[0]
+	vbox.add_child(ct_row[2])
+
+func _make_bar_row(prefix: String, fill_color: Color, show_value: bool = true) -> Array:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 4)
+	row.add_theme_constant_override("separation", 8)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var prefix := Label.new()
-	prefix.text = label_text
-	prefix.custom_minimum_size = Vector2(22, 0)
-	prefix.add_theme_font_size_override("font_size", 11)
-	row.add_child(prefix)
+	var lbl := Label.new()
+	lbl.text = prefix
+	lbl.custom_minimum_size = Vector2(32, 0)
+	lbl.add_theme_font_size_override("font_size", 17)
+	lbl.add_theme_color_override("font_color", fill_color)
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(lbl)
 
 	var bar := ProgressBar.new()
 	bar.min_value = 0.0
 	bar.max_value = 1.0
-	bar.value = initial_ratio
+	bar.value = 1.0
 	bar.show_percentage = false
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var style := StyleBoxFlat.new()
-	style.bg_color = bar_color
-	bar.add_theme_stylebox_override("fill", style)
+	bar.custom_minimum_size = Vector2(0, 22)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var track := StyleBoxFlat.new()
+	track.bg_color = C_TRACK
+	track.set_corner_radius_all(4)
+	bar.add_theme_stylebox_override("background", track)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = fill_color
+	fill.set_corner_radius_all(4)
+	bar.add_theme_stylebox_override("fill", fill)
 	row.add_child(bar)
 
-	var value_label := Label.new()
-	value_label.text = ""
-	value_label.custom_minimum_size = Vector2(60, 0)
-	value_label.add_theme_font_size_override("font_size", 11)
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	row.add_child(value_label)
+	var val_lbl := Label.new()
+	val_lbl.text = ""
+	val_lbl.custom_minimum_size = Vector2(90, 0)
+	val_lbl.add_theme_font_size_override("font_size", 17)
+	val_lbl.add_theme_color_override("font_color", C_TEXT_DIM)
+	val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	val_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	val_lbl.visible = show_value
+	row.add_child(val_lbl)
 
-	assign_fn.call(bar, value_label)
-	return row
+	return [bar, val_lbl, row]
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
 func display_unit(unit: Unit) -> void:
 	show()
 	_name_label.text = unit.unit_name
-	_job_label.text = unit.current_job.job_name if unit.current_job else ""
+	_job_label.text  = unit.current_job.job_name if unit.current_job else ""
+	_faction_stripe.color = C_PLAYER if unit.faction == GameConstants.FACTION.PLAYER else C_ENEMY
 	_refresh_bars(unit)
-
-	# Connect signals so the panel updates in real time.
 	if not unit.hp_changed.is_connected(_on_hp_changed):
 		unit.hp_changed.connect(_on_hp_changed)
 	if not unit.mp_changed.is_connected(_on_mp_changed):
@@ -99,23 +156,20 @@ func clear() -> void:
 	hide()
 
 func refresh_ct(unit: Unit) -> void:
-	if not visible:
-		return
-	_ct_bar.value = clampf(float(unit.ct) / float(GameConstants.CT_THRESHOLD), 0.0, 1.0)
-
-# ── Private ───────────────────────────────────────────────────────────────────
+	if visible:
+		_ct_bar.value = clampf(float(unit.ct) / float(GameConstants.CT_THRESHOLD), 0.0, 1.0)
 
 func _refresh_bars(unit: Unit) -> void:
-	_hp_bar.value = float(unit.current_hp) / float(unit.max_hp)
-	_hp_label.text = "%d/%d" % [unit.current_hp, unit.max_hp]
-	_mp_bar.value = float(unit.current_mp) / float(unit.max_mp) if unit.max_mp > 0 else 0.0
-	_mp_label.text = "%d/%d" % [unit.current_mp, unit.max_mp]
-	_ct_bar.value = clampf(float(unit.ct) / float(GameConstants.CT_THRESHOLD), 0.0, 1.0)
+	_hp_bar.value  = float(unit.current_hp) / float(unit.max_hp)
+	_hp_label.text = "%d / %d" % [unit.current_hp, unit.max_hp]
+	_mp_bar.value  = float(unit.current_mp) / float(unit.max_mp) if unit.max_mp > 0 else 0.0
+	_mp_label.text = "%d / %d" % [unit.current_mp, unit.max_mp]
+	_ct_bar.value  = clampf(float(unit.ct) / float(GameConstants.CT_THRESHOLD), 0.0, 1.0)
 
 func _on_hp_changed(new_hp: int, max_hp_val: int) -> void:
-	_hp_bar.value = float(new_hp) / float(max_hp_val)
-	_hp_label.text = "%d/%d" % [new_hp, max_hp_val]
+	_hp_bar.value  = float(new_hp) / float(max_hp_val)
+	_hp_label.text = "%d / %d" % [new_hp, max_hp_val]
 
 func _on_mp_changed(new_mp: int, max_mp_val: int) -> void:
-	_mp_bar.value = float(new_mp) / float(max_mp_val) if max_mp_val > 0 else 0.0
-	_mp_label.text = "%d/%d" % [new_mp, max_mp_val]
+	_mp_bar.value  = float(new_mp) / float(max_mp_val) if max_mp_val > 0 else 0.0
+	_mp_label.text = "%d / %d" % [new_mp, max_mp_val]

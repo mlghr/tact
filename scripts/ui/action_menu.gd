@@ -1,5 +1,4 @@
-## Pop-up action menu shown when the player selects their unit.
-## Emits signals for Move, Attack (basic), Ability, and Wait.
+## Action menu shown in the bottom-right when the player's unit is selected.
 class_name ActionMenu
 extends PanelContainer
 
@@ -8,82 +7,138 @@ signal attack_pressed()
 signal ability_pressed(ability: AbilityData)
 signal wait_pressed()
 
-var _button_container: VBoxContainer
-var _move_button: Button
-var _attack_button: Button
+const C_PANEL_BG:      Color = Color(0.07, 0.08, 0.13, 0.93)
+const C_BORDER:        Color = Color(0.22, 0.27, 0.44)
+const C_HEADER:        Color = Color(0.55, 0.60, 0.74)
+const C_TEXT:          Color = Color(0.90, 0.92, 0.97)
+const C_TEXT_DIM:      Color = Color(0.45, 0.48, 0.58)
+const C_SEPARATOR:     Color = Color(0.20, 0.24, 0.36)
+const C_ACCENT_MOVE:   Color = Color(0.28, 0.55, 1.00)
+const C_ACCENT_ATTACK: Color = Color(0.95, 0.42, 0.15)
+const C_ACCENT_SKILL:  Color = Color(0.68, 0.28, 0.95)
+const C_ACCENT_WAIT:   Color = Color(0.40, 0.42, 0.50)
+
+var _vbox:            VBoxContainer
+var _move_button:     Button
+var _attack_button:   Button
 var _ability_buttons: Array[Button] = []
-var _wait_button: Button
+var _wait_button:     Button
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(140, 0)
+	custom_minimum_size = Vector2(340, 0)
+	_apply_panel_style()
 	_build_layout()
 	hide()
 
+func _apply_panel_style() -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = C_PANEL_BG
+	style.border_color = C_BORDER
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12.0)
+	add_theme_stylebox_override("panel", style)
+
 func _build_layout() -> void:
-	_button_container = VBoxContainer.new()
-	_button_container.add_theme_constant_override("separation", 2)
-	add_child(_button_container)
+	_vbox = VBoxContainer.new()
+	_vbox.add_theme_constant_override("separation", 5)
+	add_child(_vbox)
 
-	_move_button = _make_button("Move", _on_move_pressed)
-	_attack_button = _make_button("Attack", _on_attack_pressed)
-	_wait_button = _make_button("Wait", _on_wait_pressed)
+	var header := Label.new()
+	header.text = "ACTIONS"
+	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_color_override("font_color", C_HEADER)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vbox.add_child(header)
 
-func _make_button(label: String, callback: Callable) -> Button:
+	_vbox.add_child(_make_separator())
+
+	_move_button   = _make_action_button("Move",   C_ACCENT_MOVE,   _on_move_pressed)
+	_attack_button = _make_action_button("Attack", C_ACCENT_ATTACK, _on_attack_pressed)
+
+	_vbox.add_child(_make_separator())
+	_wait_button = _make_action_button("Wait", C_ACCENT_WAIT, _on_wait_pressed)
+
+func _make_action_button(label: String, accent: Color, callback: Callable) -> Button:
 	var btn := Button.new()
 	btn.text = label
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.add_theme_color_override("font_color", C_TEXT)
+	btn.add_theme_color_override("font_disabled_color", C_TEXT_DIM)
+	btn.add_theme_stylebox_override("normal",   _btn_style(accent, Color(0.09, 0.10, 0.16)))
+	btn.add_theme_stylebox_override("hover",    _btn_style(accent, Color(0.14, 0.17, 0.26)))
+	btn.add_theme_stylebox_override("pressed",  _btn_style(accent, Color(0.18, 0.22, 0.34)))
+	btn.add_theme_stylebox_override("disabled", _btn_style(Color(0.22, 0.24, 0.30), Color(0.07, 0.08, 0.11)))
+	btn.add_theme_stylebox_override("focus",    _btn_style(accent, Color(0.14, 0.17, 0.26)))
 	btn.pressed.connect(callback)
-	_button_container.add_child(btn)
+	_vbox.add_child(btn)
 	return btn
+
+func _btn_style(accent: Color, bg: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.border_color = accent
+	style.border_width_left = 5
+	style.set_corner_radius_all(5)
+	style.content_margin_left   = 16.0
+	style.content_margin_right  = 16.0
+	style.content_margin_top    = 11.0
+	style.content_margin_bottom = 11.0
+	return style
+
+func _make_separator() -> HSeparator:
+	var sep := HSeparator.new()
+	var sep_style := StyleBoxFlat.new()
+	sep_style.bg_color = C_SEPARATOR
+	sep.add_theme_stylebox_override("separator", sep_style)
+	sep.add_theme_constant_override("separation", 1)
+	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return sep
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-## Show the menu for `unit`, enabling/disabling options based on turn state.
 func show_for_unit(unit: Unit) -> void:
 	_clear_ability_buttons()
 
 	_move_button.disabled = not unit.can_move()
-	_move_button.modulate = Color.WHITE if unit.can_move() else Color(0.5, 0.5, 0.5)
 
-	# Basic attack (innate ability from job)
 	var has_innate := unit.current_job != null \
 		and not unit.current_job.innate_abilities.is_empty()
 	_attack_button.disabled = not unit.can_act()
-	_attack_button.modulate = Color.WHITE if unit.can_act() else Color(0.5, 0.5, 0.5)
-	_attack_button.visible = has_innate or unit.equipped_action == null
+	_attack_button.visible  = has_innate or unit.equipped_action == null
 
-	# Equipped action ability (if different from the innate one)
 	if unit.can_act() and unit.equipped_action != null:
-		var btn := _make_button(unit.equipped_action.ability_name,
-			func(): _on_ability_pressed(unit.equipped_action))
-		_ability_buttons.append(btn)
+		var ability_btn := _make_action_button(
+			unit.equipped_action.ability_name,
+			C_ACCENT_SKILL,
+			func(): _on_ability_pressed(unit.equipped_action)
+		)
+		_ability_buttons.append(ability_btn)
+		_vbox.move_child(_vbox.get_child(_vbox.get_child_count() - 2),
+			_vbox.get_child_count() - 1)
+		_vbox.move_child(_wait_button, _vbox.get_child_count() - 1)
 
-	_wait_button.get_parent().move_child(_wait_button, _button_container.get_child_count())
 	show()
 
 func hide_menu() -> void:
 	hide()
 
-# ── Private ───────────────────────────────────────────────────────────────────
-
 func _clear_ability_buttons() -> void:
 	for btn in _ability_buttons:
-		_button_container.remove_child(btn)
+		_vbox.remove_child(btn)
 		btn.queue_free()
 	_ability_buttons.clear()
 
 func _on_move_pressed() -> void:
-	hide()
-	move_pressed.emit()
+	hide(); move_pressed.emit()
 
 func _on_attack_pressed() -> void:
-	hide()
-	attack_pressed.emit()
+	hide(); attack_pressed.emit()
 
 func _on_ability_pressed(ability: AbilityData) -> void:
-	hide()
-	ability_pressed.emit(ability)
+	hide(); ability_pressed.emit(ability)
 
 func _on_wait_pressed() -> void:
-	hide()
-	wait_pressed.emit()
+	hide(); wait_pressed.emit()

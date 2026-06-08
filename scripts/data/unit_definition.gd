@@ -6,7 +6,7 @@ extends Resource
 @export var unit_name: String = "Unknown"
 @export var starting_job: JobData
 
-## Faction: use GameConstants.FACTION_* values.
+## Faction: use GameConstants.FACTION.* values.
 @export var faction: int = 0
 
 # ── Base Stats (before job multipliers) ──────────────────────────────────────

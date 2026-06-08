@@ -13,7 +13,7 @@ signal died()
 # ── Identity ──────────────────────────────────────────────────────────────────
 
 var unit_name: String = "Unknown"
-## GameConstants.FACTION_* value.
+## GameConstants.FACTION.* value.
 var faction: int = GameConstants.FACTION_PLAYER
 var definition: UnitDefinition = null
 var current_job: JobData = null

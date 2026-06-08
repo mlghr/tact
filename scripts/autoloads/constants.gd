@@ -35,6 +35,8 @@ const FACTION_PLAYER: int = 0
 const FACTION_ENEMY: int = 1
 const FACTION_NEUTRAL: int = 2
 
+enum FACTION { PLAYER, ENEMY, NEUTRAL, GUEST }
+
 ## Highlight types for Tile.set_highlight().
 const HIGHLIGHT_NONE: int = 0
 const HIGHLIGHT_MOVE: int = 1
@@ -42,3 +44,7 @@ const HIGHLIGHT_ATTACK: int = 2
 const HIGHLIGHT_HOVER: int = 3
 const HIGHLIGHT_SELECTED: int = 4
 const HIGHLIGHT_SKILL: int = 5
+## Hovering over a tile the active unit CAN move/act on — bright green.
+const HIGHLIGHT_HOVER_VALID: int = 6
+## Hovering over a tile the active unit CANNOT reach — bright red.
+const HIGHLIGHT_HOVER_INVALID: int = 7

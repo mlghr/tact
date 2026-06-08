@@ -1,0 +1,84 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1"]
+
+[node name="PauseMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0, 0.01, 0.05, 0.74)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(420, 0)
+
+[node name="Margin" type="MarginContainer" parent="Center/MenuPanel"]
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_bottom = 36
+
+[node name="ContentBox" type="VBoxContainer" parent="Center/MenuPanel/Margin"]
+theme_override_constants/separation = 0
+
+[node name="PausedLabel" type="Label" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+text = "PAUSED"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 52
+theme_override_colors/font_color = Color(0.92, 0.93, 0.97, 1.0)
+
+[node name="LabelGap" type="Control" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="Separator" type="HSeparator" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+
+[node name="ButtonSpacer" type="Control" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 32)
+
+[node name="ResumeButton" type="Button" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 58)
+text = "Resume"
+
+[node name="ButtonGap" type="Control" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="ReturnToTitleButton" type="Button" parent="Center/MenuPanel/Margin/ContentBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 58)
+text = "Return to Title"
+
+[node name="FadeOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0, 0.0, 0.0, 0.0)
