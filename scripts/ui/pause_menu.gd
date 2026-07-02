@@ -12,13 +12,22 @@ const C_SEPARATOR:     Color = Color(0.20, 0.24, 0.38)
 const C_ACCENT_RESUME: Color = Color(0.28, 0.55, 1.00)
 const C_ACCENT_TITLE:  Color = Color(0.55, 0.40, 0.72)
 
+const UI_SCALE: float = 1.0
+
 @onready var _menu_panel:    PanelContainer = $Center/MenuPanel
+@onready var _margin:        MarginContainer = $Center/MenuPanel/Margin
+@onready var _content_box:   VBoxContainer   = $Center/MenuPanel/Margin/ContentBox
+@onready var _paused_label:  Label           = $Center/MenuPanel/Margin/ContentBox/PausedLabel
+@onready var _label_gap:     Control         = $Center/MenuPanel/Margin/ContentBox/LabelGap
 @onready var _resume_button: Button         = $Center/MenuPanel/Margin/ContentBox/ResumeButton
+@onready var _button_spacer: Control         = $Center/MenuPanel/Margin/ContentBox/ButtonSpacer
+@onready var _button_gap:    Control         = $Center/MenuPanel/Margin/ContentBox/ButtonGap
 @onready var _title_button:  Button         = $Center/MenuPanel/Margin/ContentBox/ReturnToTitleButton
 @onready var _separator:     HSeparator     = $Center/MenuPanel/Margin/ContentBox/Separator
 @onready var _fade_overlay:  ColorRect      = $FadeOverlay
 
 func _ready() -> void:
+	_apply_layout_scale()
 	_style_panel()
 	_style_separator()
 	_style_button(_resume_button, C_ACCENT_RESUME)
@@ -56,22 +65,36 @@ func _on_return_to_title() -> void:
 
 # ── Styling ───────────────────────────────────────────────────────────────────
 
+func _apply_layout_scale() -> void:
+	_menu_panel.custom_minimum_size = Vector2(420.0 * UI_SCALE, 0.0)
+	_margin.add_theme_constant_override("margin_left", int(36 * UI_SCALE))
+	_margin.add_theme_constant_override("margin_right", int(36 * UI_SCALE))
+	_margin.add_theme_constant_override("margin_top", int(36 * UI_SCALE))
+	_margin.add_theme_constant_override("margin_bottom", int(36 * UI_SCALE))
+	_content_box.add_theme_constant_override("separation", 0)
+	_paused_label.add_theme_font_size_override("font_size", int(52 * UI_SCALE))
+	_label_gap.custom_minimum_size = Vector2(0.0, 8.0 * UI_SCALE)
+	_button_spacer.custom_minimum_size = Vector2(0.0, 32.0 * UI_SCALE)
+	_button_gap.custom_minimum_size = Vector2(0.0, 10.0 * UI_SCALE)
+	_resume_button.custom_minimum_size = Vector2(0.0, 58.0 * UI_SCALE)
+	_title_button.custom_minimum_size = Vector2(0.0, 58.0 * UI_SCALE)
+
 func _style_panel() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color     = C_PANEL_BG
 	style.border_color = C_BORDER
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(10)
+	style.set_border_width_all(int(1 * UI_SCALE))
+	style.set_corner_radius_all(int(10 * UI_SCALE))
 	_menu_panel.add_theme_stylebox_override("panel", style)
 
 func _style_separator() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_SEPARATOR
 	_separator.add_theme_stylebox_override("separator", style)
-	_separator.add_theme_constant_override("separation", 1)
+	_separator.add_theme_constant_override("separation", int(1 * UI_SCALE))
 
 func _style_button(button: Button, accent: Color) -> void:
-	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_font_size_override("font_size", int(22 * UI_SCALE))
 	button.add_theme_color_override("font_color",          Color(0.90, 0.92, 0.97))
 	button.add_theme_color_override("font_disabled_color", Color(0.40, 0.42, 0.50))
 	button.add_theme_stylebox_override("normal",   _make_button_style(accent, Color(0.08, 0.09, 0.15)))
@@ -84,10 +107,10 @@ func _make_button_style(accent: Color, bg: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color            = bg
 	style.border_color        = accent
-	style.border_width_left   = 4
-	style.set_corner_radius_all(5)
-	style.content_margin_left   = 24.0
-	style.content_margin_right  = 24.0
-	style.content_margin_top    = 14.0
-	style.content_margin_bottom = 14.0
+	style.border_width_left   = int(4 * UI_SCALE)
+	style.set_corner_radius_all(int(5 * UI_SCALE))
+	style.content_margin_left   = 24.0 * UI_SCALE
+	style.content_margin_right  = 24.0 * UI_SCALE
+	style.content_margin_top    = 14.0 * UI_SCALE
+	style.content_margin_bottom = 14.0 * UI_SCALE
 	return style

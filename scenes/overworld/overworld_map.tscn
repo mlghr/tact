@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://c5qg2gc6wrnle"]
+
+[ext_resource type="Script" uid="uid://d034aq4cg3kl4" path="res://scripts/overworld/overworld_map.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/overworld/overworld_hud.tscn" id="2"]
+[ext_resource type="Script" uid="uid://bu2un0l7dps5m" path="res://scripts/overworld/connections_layer.gd" id="3"]
+
+[node name="OverworldMap" type="Control" unique_id=88484792]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="." unique_id=328444778]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.06, 0.07, 0.1, 1)
+
+[node name="MapArea" type="Control" parent="." unique_id=1389709890]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ConnectionsLayer" type="Control" parent="MapArea" unique_id=523850371]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3")
+
+[node name="NodesContainer" type="Control" parent="MapArea" unique_id=1750386560]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlayerMarker" type="Control" parent="MapArea" unique_id=1326942034]
+custom_minimum_size = Vector2(44, 52)
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="MarkerPanel" type="PanelContainer" parent="MapArea/PlayerMarker" unique_id=419270461]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.84
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarkerLabel" type="Label" parent="MapArea/PlayerMarker/MarkerPanel" unique_id=111367953]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.55, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "●"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OverworldHUD" parent="." unique_id=971669809 instance=ExtResource("2")]
+layout_mode = 1
+
+[node name="TroupeOverlay" type="Control" parent="." unique_id=1953063015]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DimBackground" type="ColorRect" parent="TroupeOverlay" unique_id=1219566881]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0.02, 0.72)
+
+[node name="Center" type="CenterContainer" parent="TroupeOverlay" unique_id=687489696]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TroupePanel" type="PanelContainer" parent="TroupeOverlay/Center" unique_id=1082323377]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="TroupeOverlay/Center/TroupePanel" unique_id=1535460556]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 36
+
+[node name="ContentBox" type="VBoxContainer" parent="TroupeOverlay/Center/TroupePanel/Margin" unique_id=2129769597]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TroupeTitle" type="Label" parent="TroupeOverlay/Center/TroupePanel/Margin/ContentBox" unique_id=1818301332]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.93, 0.97, 1)
+theme_override_font_sizes/font_size = 48
+text = "TROUPE"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="TroupeOverlay/Center/TroupePanel/Margin/ContentBox" unique_id=951457145]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="PlaceholderLabel" type="Label" parent="TroupeOverlay/Center/TroupePanel/Margin/ContentBox" unique_id=274949009]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.6, 0.74, 1)
+theme_override_font_sizes/font_size = 18
+text = "Your party members and their abilities
+will be managed here."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ButtonSpacer" type="Control" parent="TroupeOverlay/Center/TroupePanel/Margin/ContentBox" unique_id=711290058]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="TroupeOverlay/Center/TroupePanel/Margin/ContentBox" unique_id=1249880839]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+text = "Close"
+
+[node name="FadeOverlay" type="ColorRect" parent="." unique_id=228302369]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)

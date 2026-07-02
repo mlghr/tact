@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/overworld_hud.gd" id="1"]
+
+[node name="OverworldHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+mouse_filter = 2
+
+[node name="TopLeft" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 12
+offset_top = 12
+offset_right = 280
+offset_bottom = 110
+
+[node name="Margin" type="MarginContainer" parent="TopLeft"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="TopLeft/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LocationLabel" type="Label" parent="TopLeft/Margin/VBox"]
+layout_mode = 2
+text = "—"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.92, 0.93, 0.97, 1)
+
+[node name="TypeLabel" type="Label" parent="TopLeft/Margin/VBox"]
+layout_mode = 2
+text = "● —"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.55, 0.6, 0.74, 1)
+
+[node name="BottomLeft" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+grow_vertical = 0
+offset_left = 12
+offset_top = -68
+offset_right = 180
+offset_bottom = -12
+
+[node name="TroupeButton" type="Button" parent="BottomLeft"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Troupe"
+custom_minimum_size = Vector2(140, 48)
+
+[node name="NodeInfoPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+offset_left = -220
+offset_top = -180
+offset_right = 220
+offset_bottom = -14
+visible = false
+
+[node name="Margin" type="MarginContainer" parent="NodeInfoPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="NodeInfoPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="InfoNameLabel" type="Label" parent="NodeInfoPanel/Margin/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.92, 0.93, 0.97, 1)
+
+[node name="InfoDescLabel" type="Label" parent="NodeInfoPanel/Margin/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+
+[node name="InfoHintLabel" type="Label" parent="NodeInfoPanel/Margin/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13

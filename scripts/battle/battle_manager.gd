@@ -60,6 +60,7 @@ const CAMERA_PITCH_MAX: float = -18.0  ## Most horizontal
 
 const CAMERA_DISTANCE: float = 10.0
 const CAMERA_HEIGHT: float = 14.0
+const CAMERA_ORBIT_DISTANCE: float = 17.20465
 const CAMERA_PITCH_DEG: float = -52.0  ## Default starting pitch
 ## Degrees per Q/E press.
 const CAMERA_ROTATE_STEP: float = 45.0
@@ -72,12 +73,15 @@ const CAMERA_ZOOM_STEP: float = 0.14
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 
+const STATUS_UI_SCALE: float = 1.0
+
 var _hud_layer: CanvasLayer
 var _unit_info_panel: UnitInfoPanel
 var _action_menu: ActionMenu
 var _turn_order_bar: TurnOrderBar
 var _status_label: Label
 var _pause_menu: Control
+var _move_confirmation_dialog: ConfirmationDialog
 
 ## True while the pause menu is open; suppresses all battle input.
 var _is_paused: bool = false
@@ -87,12 +91,15 @@ var _is_paused: bool = false
 var _active_unit: Unit = null
 ## Ability currently being targeted (action or innate attack).
 var _pending_ability: AbilityData = null
+## Destination waiting for OK/Cancel from the move confirmation dialog.
+var _pending_move_destination: Tile = null
 ## Tiles highlighted for the current move/target selection.
 var _highlighted_tiles: Array[Tile] = []
 
 # ── Hover state ───────────────────────────────────────────────────────────────
 
 var _hovered_tile: Tile = null
+var _move_path_arrow: MovePathArrow = null
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Lifecycle
@@ -108,12 +115,18 @@ func _ready() -> void:
 	_turn_manager = TurnManager.new()
 	_turn_manager.name = "TurnManager"
 	add_child(_turn_manager)
+	_build_move_path_arrow()
 	_build_units()
 	_build_hud()
 	_connect_signals()
 	_start_battle()
 
 func _unhandled_input(event: InputEvent) -> void:
+	# While the confirmation dialog is open, it owns input. This prevents a
+	# second tile click or camera drag from changing state underneath the modal.
+	if _is_move_confirmation_open():
+		return
+
 	# ── Camera controls (always active) ──────────────────────────────────────
 
 	# Mac trackpad: two-finger scroll → zoom.
@@ -202,10 +215,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					_lmb_is_dragging = true
 
 			if _lmb_is_dragging:
-				# Horizontal drag → yaw (no tween for live feel).
+				# Horizontal drag → orbit around the battlefield center.
 				_target_camera_rotation += event.relative.x * CAMERA_DRAG_YAW_SENSITIVITY
-				_camera_pivot.rotation_degrees.y = _target_camera_rotation
-				# Vertical drag → pitch (drag up = more horizontal view).
+				# Vertical drag → orbit above/below the battlefield center.
 				_camera_pitch = clampf(
 					_camera_pitch - event.relative.y * CAMERA_DRAG_PITCH_SENSITIVITY,
 					CAMERA_PITCH_MIN, CAMERA_PITCH_MAX
@@ -319,6 +331,11 @@ func _spawn_unit_from_dict(def: Dictionary) -> void:
 
 	_turn_manager.register_unit(unit)
 
+func _build_move_path_arrow() -> void:
+	_move_path_arrow = MovePathArrow.new()
+	_move_path_arrow.name = "MovePathArrow"
+	add_child(_move_path_arrow)
+
 func _build_hud() -> void:
 	_hud_layer = CanvasLayer.new()
 	_hud_layer.name = "HUD"
@@ -380,19 +397,19 @@ func _build_hud() -> void:
 	var status_style := StyleBoxFlat.new()
 	status_style.bg_color = Color(0.06, 0.07, 0.12, 0.85)
 	status_style.border_color = Color(0.22, 0.27, 0.44)
-	status_style.set_border_width_all(1)
-	status_style.set_corner_radius_all(6)
-	status_style.content_margin_left   = 20.0
-	status_style.content_margin_right  = 20.0
-	status_style.content_margin_top    = 6.0
-	status_style.content_margin_bottom = 6.0
+	status_style.set_border_width_all(int(1 * STATUS_UI_SCALE))
+	status_style.set_corner_radius_all(int(6 * STATUS_UI_SCALE))
+	status_style.content_margin_left   = 20.0 * STATUS_UI_SCALE
+	status_style.content_margin_right  = 20.0 * STATUS_UI_SCALE
+	status_style.content_margin_top    = 6.0 * STATUS_UI_SCALE
+	status_style.content_margin_bottom = 6.0 * STATUS_UI_SCALE
 	status_panel.add_theme_stylebox_override("panel", status_style)
 	status_row.add_child(status_panel)
 
 	_status_label = Label.new()
 	_status_label.text = ""
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 18)
+	_status_label.add_theme_font_size_override("font_size", int(18 * STATUS_UI_SCALE))
 	_status_label.add_theme_color_override("font_color", Color(0.88, 0.90, 0.97))
 	_status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	status_panel.add_child(_status_label)
@@ -424,6 +441,12 @@ func _build_hud() -> void:
 	_pause_menu = pause_scene.instantiate()
 	_hud_layer.add_child(_pause_menu)
 	_pause_menu.resume_requested.connect(_on_pause_resume)
+
+	var move_confirmation_scene := load("res://scenes/ui/move_confirmation_dialog.tscn") as PackedScene
+	_move_confirmation_dialog = move_confirmation_scene.instantiate() as ConfirmationDialog
+	_hud_layer.add_child(_move_confirmation_dialog)
+	_move_confirmation_dialog.confirmed.connect(_on_move_confirmation_confirmed)
+	_move_confirmation_dialog.canceled.connect(_on_move_confirmation_canceled)
 
 func _connect_signals() -> void:
 	_action_menu.move_pressed.connect(_on_action_menu_move)
@@ -481,6 +504,7 @@ func _end_current_turn() -> void:
 	_turn_manager.end_unit_turn(_active_unit)
 	_active_unit = null
 	_pending_ability = null
+	_pending_move_destination = null
 	_advance_to_next_turn()
 
 func _check_battle_end() -> bool:
@@ -517,6 +541,7 @@ func _handle_tile_left_click(tile: Tile) -> void:
 func _handle_cancel() -> void:
 	match _phase:
 		BattlePhase.PLAYER_SELECTING_MOVE, BattlePhase.PLAYER_SELECTING_TARGET:
+			_close_move_confirmation()
 			_clear_highlights()
 			_change_phase(BattlePhase.PLAYER_SELECTING)
 			_action_menu.show_for_unit(_active_unit)
@@ -537,6 +562,8 @@ func _handle_tile_hover(tile: Tile) -> void:
 
 	if tile != null:
 		_apply_hover_highlight(tile)
+	else:
+		_hide_move_path_arrow()
 
 ## Show the appropriate hover color for `tile` based on the current phase.
 func _apply_hover_highlight(tile: Tile) -> void:
@@ -546,17 +573,21 @@ func _apply_hover_highlight(tile: Tile) -> void:
 			and (tile.occupant == null or tile.occupant == _active_unit)
 		if is_valid_dest:
 			tile.set_highlight(GameConstants.HIGHLIGHT_HOVER_VALID)
+			_show_move_path_arrow(tile)
 		elif tile != (_active_unit.current_tile if _active_unit else null):
 			tile.set_highlight(GameConstants.HIGHLIGHT_HOVER_INVALID)
+			_hide_move_path_arrow()
 		return
 
 	# During target selection: only hover non-highlighted tiles with a generic tint.
 	if _phase == BattlePhase.PLAYER_SELECTING_TARGET:
+		_hide_move_path_arrow()
 		if not _highlighted_tiles.has(tile):
 			tile.set_highlight(GameConstants.HIGHLIGHT_HOVER)
 		return
 
 	# All other phases: generic yellow hover on any non-highlighted, non-selected tile.
+	_hide_move_path_arrow()
 	var is_selected := _active_unit != null and tile == _active_unit.current_tile
 	if not is_selected and not _highlighted_tiles.has(tile):
 		tile.set_highlight(GameConstants.HIGHLIGHT_HOVER)
@@ -617,6 +648,12 @@ func _confirm_move(destination: Tile) -> void:
 		return
 	if destination.occupant != null:
 		return  # Occupied
+	_pending_move_destination = destination
+	_hide_move_path_arrow()
+	_set_status("Confirm movement.")
+	_move_confirmation_dialog.popup_centered()
+
+func _execute_confirmed_move(destination: Tile) -> void:
 	_clear_highlights()
 	var from_tile := _active_unit.current_tile
 	_battle_map.place_unit(_active_unit, destination)
@@ -729,6 +766,38 @@ func _clear_highlights() -> void:
 	_battle_map.clear_all_highlights()
 	_highlighted_tiles.clear()
 	_hovered_tile = null  # Reset so the next MouseMotion event re-evaluates cleanly.
+	_hide_move_path_arrow()
+
+func _show_move_path_arrow(destination: Tile) -> void:
+	if not is_instance_valid(_move_path_arrow):
+		return
+	if _active_unit == null or _active_unit.current_tile == null:
+		_hide_move_path_arrow()
+		return
+
+	var path_tiles := PathFinder.find_path(
+		_active_unit.current_tile,
+		destination,
+		_active_unit,
+		_battle_map
+	)
+	if path_tiles.size() < 2:
+		_hide_move_path_arrow()
+		return
+
+	_move_path_arrow.show_path(path_tiles, _active_unit.faction)
+
+func _hide_move_path_arrow() -> void:
+	if is_instance_valid(_move_path_arrow):
+		_move_path_arrow.hide_path()
+
+func _is_move_confirmation_open() -> bool:
+	return is_instance_valid(_move_confirmation_dialog) and _move_confirmation_dialog.visible
+
+func _close_move_confirmation() -> void:
+	_pending_move_destination = null
+	if is_instance_valid(_move_confirmation_dialog):
+		_move_confirmation_dialog.hide()
 
 func _change_phase(new_phase: BattlePhase) -> void:
 	_phase = new_phase
@@ -776,14 +845,15 @@ func _centre_camera_on_map() -> void:
 
 ## Re-positions the camera arm according to current zoom level and angle.
 func _apply_camera_transform() -> void:
-	if not is_instance_valid(_camera):
+	if not is_instance_valid(_camera) or not is_instance_valid(_camera_pivot):
 		return
-	_camera.position = Vector3(
-		0.0,
-		CAMERA_HEIGHT * _zoom_level,
-		CAMERA_DISTANCE * _zoom_level
-	)
-	_camera.rotation_degrees = Vector3(_camera_pitch, 0.0, 0.0)
+	_camera_pivot.rotation_degrees.y = _target_camera_rotation
+	var orbit_distance := CAMERA_ORBIT_DISTANCE * _zoom_level
+	var elevation_radians := deg_to_rad(-_camera_pitch)
+	var horizontal_distance := cos(elevation_radians) * orbit_distance
+	var camera_height := sin(elevation_radians) * orbit_distance
+	_camera.position = Vector3(0.0, camera_height, horizontal_distance)
+	_camera.look_at(_camera_pivot.global_position, Vector3.UP)
 
 # ── Raycasting ────────────────────────────────────────────────────────────────
 
@@ -809,6 +879,22 @@ func _raycast_tile(screen_pos: Vector2) -> Tile:
 
 func _on_pause_resume() -> void:
 	_is_paused = false
+
+func _on_move_confirmation_confirmed() -> void:
+	if _pending_move_destination == null:
+		return
+	if _active_unit == null:
+		_pending_move_destination = null
+		return
+
+	var destination := _pending_move_destination
+	_pending_move_destination = null
+	_execute_confirmed_move(destination)
+
+func _on_move_confirmation_canceled() -> void:
+	_pending_move_destination = null
+	if _phase == BattlePhase.PLAYER_SELECTING_MOVE:
+		_set_status("Select a destination.")
 
 func _on_unit_died(unit: Unit) -> void:
 	_turn_manager.unregister_unit(unit)

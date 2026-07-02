@@ -16,14 +16,16 @@ const C_TEXT:        Color = Color(0.88, 0.90, 0.96)
 const C_TEXT_DIM:    Color = Color(0.50, 0.55, 0.68)
 const C_EMPTY_BG:    Color = Color(0.07, 0.08, 0.12)
 
-const SLOT_W_ACTIVE: int = 120
-const SLOT_W_IDLE:   int = 98
-const SLOT_H:        int = 100
+const UI_SCALE: float = 4.0
+
+const SLOT_W_ACTIVE_BASE: float = 120.0
+const SLOT_W_IDLE_BASE:   float = 98.0
+const SLOT_H_BASE:        float = 100.0
 
 var _slots: Array[Dictionary] = []
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 4)
+	add_theme_constant_override("separation", int(4 * UI_SCALE))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_slots(GameConstants.TURN_PREVIEW_COUNT)
 
@@ -35,26 +37,26 @@ func _build_slots(count: int) -> void:
 
 func _make_slot() -> Dictionary:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(SLOT_W_IDLE, SLOT_H)
+	panel.custom_minimum_size = Vector2(SLOT_W_IDLE_BASE * UI_SCALE, SLOT_H_BASE * UI_SCALE)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_slot_style(panel, C_EMPTY_BG, C_BORDER_IDLE, false)
 
 	var margin := MarginContainer.new()
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.add_theme_constant_override("margin_left",   8)
-	margin.add_theme_constant_override("margin_right",  8)
-	margin.add_theme_constant_override("margin_top",    8)
-	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.add_theme_constant_override("margin_left",   int(8 * UI_SCALE))
+	margin.add_theme_constant_override("margin_right",  int(8 * UI_SCALE))
+	margin.add_theme_constant_override("margin_top",    int(8 * UI_SCALE))
+	margin.add_theme_constant_override("margin_bottom", int(8 * UI_SCALE))
 	panel.add_child(margin)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 3)
+	vbox.add_theme_constant_override("separation", int(3 * UI_SCALE))
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(vbox)
 
 	var job_label := Label.new()
 	job_label.text = ""
-	job_label.add_theme_font_size_override("font_size", 14)
+	job_label.add_theme_font_size_override("font_size", int(14 * UI_SCALE))
 	job_label.add_theme_color_override("font_color", C_TEXT_DIM)
 	job_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	job_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -62,7 +64,7 @@ func _make_slot() -> Dictionary:
 
 	var name_label := Label.new()
 	name_label.text = ""
-	name_label.add_theme_font_size_override("font_size", 17)
+	name_label.add_theme_font_size_override("font_size", int(17 * UI_SCALE))
 	name_label.add_theme_color_override("font_color", C_TEXT)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.clip_text = true
@@ -79,18 +81,18 @@ func _make_slot() -> Dictionary:
 	hp_bar.max_value = 1.0
 	hp_bar.value = 1.0
 	hp_bar.show_percentage = false
-	hp_bar.custom_minimum_size = Vector2(0, 9)
+	hp_bar.custom_minimum_size = Vector2(0, 9 * UI_SCALE)
 	hp_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var track := StyleBoxFlat.new()
 	track.bg_color = C_HP_TRACK
-	track.set_corner_radius_all(3)
+	track.set_corner_radius_all(int(3 * UI_SCALE))
 	hp_bar.add_theme_stylebox_override("background", track)
 
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = C_HP_FILL
-	fill.set_corner_radius_all(3)
+	fill.set_corner_radius_all(int(3 * UI_SCALE))
 	hp_bar.add_theme_stylebox_override("fill", fill)
 
 	vbox.add_child(hp_bar)
@@ -115,7 +117,10 @@ func refresh(ordered_units: Array) -> void:
 			var acc_color   := C_PLAYER_ACC if unit.faction == GameConstants.FACTION_PLAYER else C_ENEMY_ACC
 
 			_apply_slot_style(panel, bg_color, border_col, is_active)
-			panel.custom_minimum_size = Vector2(SLOT_W_ACTIVE if is_active else SLOT_W_IDLE, SLOT_H)
+			panel.custom_minimum_size = Vector2(
+				(SLOT_W_ACTIVE_BASE if is_active else SLOT_W_IDLE_BASE) * UI_SCALE,
+				SLOT_H_BASE * UI_SCALE
+			)
 			name_label.text = unit.unit_name.left(7)
 			name_label.add_theme_color_override("font_color", C_TEXT if is_active else acc_color)
 			job_label.text  = _job_abbreviation(unit)
@@ -124,7 +129,7 @@ func refresh(ordered_units: Array) -> void:
 			panel.modulate.a = 1.0
 		else:
 			_apply_slot_style(panel, C_EMPTY_BG, C_BORDER_IDLE, false)
-			panel.custom_minimum_size = Vector2(SLOT_W_IDLE, SLOT_H)
+			panel.custom_minimum_size = Vector2(SLOT_W_IDLE_BASE * UI_SCALE, SLOT_H_BASE * UI_SCALE)
 			name_label.text  = ""
 			job_label.text   = ""
 			hp_bar.visible   = false
@@ -136,8 +141,8 @@ func _apply_slot_style(panel: PanelContainer, bg: Color, border: Color, is_activ
 	var style := StyleBoxFlat.new()
 	style.bg_color = bg
 	style.border_color = border
-	style.set_border_width_all(2 if is_active else 1)
-	style.set_corner_radius_all(6)
+	style.set_border_width_all(int((2 if is_active else 1) * UI_SCALE))
+	style.set_corner_radius_all(int(6 * UI_SCALE))
 	panel.add_theme_stylebox_override("panel", style)
 
 func _job_abbreviation(unit: Unit) -> String:
