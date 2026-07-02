@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/move_confirmation_dialog.gd" id="1"]
+
+[node name="MoveConfirmationDialog" type="ConfirmationDialog" unique_id=958631499]
+title = "Confirm Move"
+initial_position = 1
+size = Vector2i(320, 130)
+exclusive = true
+unresizable = true
+dialog_text = "Move here?"
+ok_button_text = "OK"
+cancel_button_text = "Cancel"
+script = ExtResource("1")

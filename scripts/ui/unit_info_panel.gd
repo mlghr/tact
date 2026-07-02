@@ -13,6 +13,8 @@ const C_CT:        Color = Color(0.90, 0.72, 0.16)
 const C_PLAYER:    Color = Color(0.30, 0.55, 1.00)
 const C_ENEMY:     Color = Color(0.90, 0.25, 0.25)
 
+const UI_SCALE: float = 4.0
+
 var _faction_stripe: ColorRect
 var _name_label:     Label
 var _job_label:      Label
@@ -23,7 +25,7 @@ var _mp_label:       Label
 var _ct_bar:         ProgressBar
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(480, 0)
+	custom_minimum_size = Vector2(480 * UI_SCALE, 0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_panel_style()
 	_build_layout()
@@ -33,12 +35,12 @@ func _apply_panel_style() -> void:
 	var style := StyleBoxFlat.new()
 	style.bg_color = C_PANEL_BG
 	style.border_color = C_BORDER
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
+	style.set_border_width_all(int(1 * UI_SCALE))
+	style.set_corner_radius_all(int(8 * UI_SCALE))
 	style.content_margin_left   = 0.0
-	style.content_margin_right  = 18.0
-	style.content_margin_top    = 14.0
-	style.content_margin_bottom = 16.0
+	style.content_margin_right  = 18.0 * UI_SCALE
+	style.content_margin_top    = 14.0 * UI_SCALE
+	style.content_margin_bottom = 16.0 * UI_SCALE
 	add_theme_stylebox_override("panel", style)
 
 func _build_layout() -> void:
@@ -47,36 +49,36 @@ func _build_layout() -> void:
 	add_child(outer)
 
 	_faction_stripe = ColorRect.new()
-	_faction_stripe.custom_minimum_size = Vector2(6, 0)
+	_faction_stripe.custom_minimum_size = Vector2(6 * UI_SCALE, 0)
 	_faction_stripe.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_faction_stripe.color = C_PLAYER
 	outer.add_child(_faction_stripe)
 
 	var gap := Control.new()
-	gap.custom_minimum_size = Vector2(14, 0)
+	gap.custom_minimum_size = Vector2(14 * UI_SCALE, 0)
 	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	outer.add_child(gap)
 
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", int(8 * UI_SCALE))
 	outer.add_child(vbox)
 
 	# Name + Job row
 	var name_row := HBoxContainer.new()
-	name_row.add_theme_constant_override("separation", 8)
+	name_row.add_theme_constant_override("separation", int(8 * UI_SCALE))
 	vbox.add_child(name_row)
 
 	_name_label = Label.new()
 	_name_label.text = "—"
-	_name_label.add_theme_font_size_override("font_size", 26)
+	_name_label.add_theme_font_size_override("font_size", int(26 * UI_SCALE))
 	_name_label.add_theme_color_override("font_color", C_TEXT)
 	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_row.add_child(_name_label)
 
 	_job_label = Label.new()
 	_job_label.text = ""
-	_job_label.add_theme_font_size_override("font_size", 17)
+	_job_label.add_theme_font_size_override("font_size", int(17 * UI_SCALE))
 	_job_label.add_theme_color_override("font_color", C_TEXT_DIM)
 	_job_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	name_row.add_child(_job_label)
@@ -96,13 +98,13 @@ func _build_layout() -> void:
 
 func _make_bar_row(prefix: String, fill_color: Color, show_value: bool = true) -> Array:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", int(8 * UI_SCALE))
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var prefix_label := Label.new()
 	prefix_label.text = prefix
-	prefix_label.custom_minimum_size = Vector2(32, 0)
-	prefix_label.add_theme_font_size_override("font_size", 17)
+	prefix_label.custom_minimum_size = Vector2(32 * UI_SCALE, 0)
+	prefix_label.add_theme_font_size_override("font_size", int(17 * UI_SCALE))
 	prefix_label.add_theme_color_override("font_color", fill_color)
 	prefix_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(prefix_label)
@@ -113,24 +115,24 @@ func _make_bar_row(prefix: String, fill_color: Color, show_value: bool = true) -
 	bar.value = 1.0
 	bar.show_percentage = false
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bar.custom_minimum_size = Vector2(0, 22)
+	bar.custom_minimum_size = Vector2(0, 22 * UI_SCALE)
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var track := StyleBoxFlat.new()
 	track.bg_color = C_TRACK
-	track.set_corner_radius_all(4)
+	track.set_corner_radius_all(int(4 * UI_SCALE))
 	bar.add_theme_stylebox_override("background", track)
 
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = fill_color
-	fill.set_corner_radius_all(4)
+	fill.set_corner_radius_all(int(4 * UI_SCALE))
 	bar.add_theme_stylebox_override("fill", fill)
 	row.add_child(bar)
 
 	var value_label := Label.new()
 	value_label.text = ""
-	value_label.custom_minimum_size = Vector2(90, 0)
-	value_label.add_theme_font_size_override("font_size", 17)
+	value_label.custom_minimum_size = Vector2(90 * UI_SCALE, 0)
+	value_label.add_theme_font_size_override("font_size", int(17 * UI_SCALE))
 	value_label.add_theme_color_override("font_color", C_TEXT_DIM)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

@@ -2,7 +2,7 @@
 ## Handles fade-in on load, button styling, and transition to the battle scene.
 extends Control
 
-const BATTLE_SCENE: String = "res://scenes/battle/battle_scene.tscn"
+const OVERWORLD_SCENE: String = "res://scenes/overworld/overworld_map.tscn"
 
 const C_BG:          Color = Color(0.04, 0.05, 0.09, 1.0)
 const C_TITLE:       Color = Color(0.92, 0.93, 0.97, 1.0)
@@ -42,7 +42,7 @@ func _on_new_game() -> void:
 	_quit_button.disabled     = true
 	var fade_out := create_tween()
 	fade_out.tween_property(_fade_overlay, "color:a", 1.0, 0.55).set_ease(Tween.EASE_IN)
-	fade_out.tween_callback(func(): get_tree().change_scene_to_file(BATTLE_SCENE))
+	fade_out.tween_callback(func(): get_tree().change_scene_to_file(OVERWORLD_SCENE))
 
 func _on_quit() -> void:
 	var fade_out := create_tween()
